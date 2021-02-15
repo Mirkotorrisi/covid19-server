@@ -14,7 +14,7 @@ export default interface Patient {
   dob: string;
   address: string;
   email: string;
-  phone: number;
+  phone: string;
   hasCovid: boolean;
   swabs: Swab[];
 }

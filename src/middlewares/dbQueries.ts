@@ -30,7 +30,7 @@ export const getSwabById = async (swab_id: string) => {
     });
 };
 
-export const getSwabForPatient = async (id: number) => {
+export const getSwabForPatient = async (id: string) => {
   const conn = await db();
   return conn
     .query(`SELECT * FROM swabs WHERE patient_id = ${id}`)
@@ -140,7 +140,7 @@ export const getAllPatients = async () => {
 };
 
 export const updatePatient = async (
-  id: number,
+  id: string,
   email: string,
   address: string,
   phone: number,
