@@ -10,6 +10,7 @@ export const getAllSwabsByPeriod = async (
       `SELECT * FROM swabs WHERE date > DATE '${startDate}' AND date < DATE '${endDate}'`
     )
     .catch((err: string | undefined) => {
+      console.log(err);
       throw new Error(err);
     });
 };
@@ -18,6 +19,7 @@ export const getAllSwabsByPatient = async (patient_id: string) => {
   return conn
     .query(`SELECT * FROM swabs WHERE patient_id = ${patient_id}`)
     .catch((err: string | undefined) => {
+      console.log(err);
       throw new Error(err);
     });
 };
@@ -26,6 +28,7 @@ export const getSwabById = async (swab_id: string) => {
   return conn
     .query(`SELECT * FROM swabs WHERE swab_id = ${swab_id}`)
     .catch((err: string | undefined) => {
+      console.log(err);
       throw new Error(err);
     });
 };
@@ -157,10 +160,19 @@ export const updatePatient = async (
     });
 };
 
-export const deletePatient = async (id: number) => {
+export const deletePatient = async (id: string) => {
   const conn = await db();
   return conn
     .query(`DELETE FROM patients WHERE patient_id= ${id} `)
+    .catch((err: string | undefined) => {
+      console.log(err);
+      throw new Error(err);
+    });
+};
+export const getUser = async (username: string) => {
+  const conn = await db();
+  return conn
+    .query(`SELECT password FROM users WHERE username= '${username}'`)
     .catch((err: string | undefined) => {
       console.log(err);
       throw new Error(err);

@@ -13,9 +13,11 @@ import {
   idValidation,
   patientValidation,
 } from "../middlewares/validator";
+import auth from "../middlewares/auth";
 
 const router = express.Router();
 
+router.use(auth);
 router.get("/", async (req: Request, res: Response) => {
   const patients = await getAllPatients();
   res.json(patients);
@@ -117,7 +119,7 @@ router.delete(
   "/:id",
   idValidation(),
   async ({ params: { id } }: Request, res: Response) => {
-    await deletePatient(Number(id));
+    await deletePatient(id);
     res.json({ status: "success" });
   }
 );

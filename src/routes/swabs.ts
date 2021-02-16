@@ -13,14 +13,15 @@ import {
   newSwabValidation,
   idValidation,
 } from "../middlewares/validator";
+import auth from "../middlewares/auth";
 
 const router = express.Router();
 const parseDates = (startDate: any, endDate: any) => {
   const momentFormat = "YYYY-MM-DD";
   return moment(endDate).isAfter(moment(startDate))
     ? {
-        startParsed: moment(startDate, momentFormat),
-        endParsed: moment(endDate, momentFormat),
+        startParsed: moment(startDate).format(momentFormat),
+        endParsed: moment(endDate).format(momentFormat),
       }
     : {
         startParsed: moment().format(momentFormat),
@@ -28,16 +29,21 @@ const parseDates = (startDate: any, endDate: any) => {
       };
 };
 
+router.use(auth);
 router.get("/", async ({ query: { startDate, endDate, patientId } }, res) => {
-  const { startParsed, endParsed } = parseDates(startDate, endDate);
-  const swabs = patientId
-    ? await getSwabForPatient(String(patientId))
-    : await getAllSwabsByPeriod(String(startParsed), String(endParsed));
-  swabs[0]
-    ? res.json(swabs)
-    : res
-        .status(404)
-        .send("No swabs found, try different period or patient id");
+  try {
+    const { startParsed, endParsed } = parseDates(startDate, endDate);
+    const swabs = patientId
+      ? await getSwabForPatient(String(patientId))
+      : await getAllSwabsByPeriod(String(startParsed), String(endParsed));
+    swabs[0]
+      ? res.json(swabs)
+      : res
+          .status(404)
+          .send("No swabs found, try different period or patient id");
+  } catch (error) {
+    res.status(500).send("Internal server error");
+  }
 });
 router.get(
   "/:id",

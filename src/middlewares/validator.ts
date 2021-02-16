@@ -49,6 +49,13 @@ export const newSwabValidation = () => {
       .withMessage("provide a valid result for swab (false, true)"),
   ];
 };
+export const userNameValidation = () => {
+  return [
+    body("username")
+      .isLength({ min: 6, max: 20 })
+      .withMessage("Username must be from 6 to 20 characters long"),
+  ];
+};
 
 export const handleErrors = (req: any, res: any, next: NextFunction) => {
   const errors = validationResult(req);

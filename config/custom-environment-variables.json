@@ -1,4 +1,6 @@
 {
   "db_username": "covid19_db_username",
-  "db_password": "covid19_db_password"
+  "db_password": "covid19_db_password",
+  "redis_url": "covid19_redis_url",
+  "jwtPrivateKey": "covid19_jwtPrivateKey"
 }
