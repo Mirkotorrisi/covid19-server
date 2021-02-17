@@ -19,57 +19,67 @@ const router = express.Router();
 
 router.use(auth);
 router.get("/", async (req: Request, res: Response) => {
-  const patients = await getAllPatients();
-  res.json(patients);
+  try {
+    const patients = await getAllPatients();
+    res.json(patients);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("Internal server error");
+  }
 });
 
 router.get(
   "/:id",
   idValidation(),
   async ({ params: { id } }: Request, res: Response) => {
-    const patientAndSwabs = await showPatientAndSwabs(Number(id));
-    const patient = !patientAndSwabs[0]
-      ? await getPatient(id)
-      : patientAndSwabs;
-    if (!patient[0]) return res.status(404).send("Patient not found");
-    let finalResult: Patient = patient.reduce(
-      (
-        acc: Patient,
-        {
-          patient_id,
-          name,
-          fiscal_code,
-          dob,
-          address,
-          email,
-          phone,
-          hasCovid,
-          swab_id,
-          team_id,
-          date,
-          type,
-          done,
-          positive_res,
-        }: any
-      ) => {
-        return {
-          patient_id,
-          name,
-          fiscal_code,
-          dob,
-          address,
-          email,
-          phone,
-          hasCovid,
-          swabs: [
-            { swab_id, team_id, date, type, done, positive_res, patient_id },
-            ...acc.swabs,
-          ],
-        };
-      },
-      { swabs: [] }
-    );
-    res.json(finalResult);
+    try {
+      const patientAndSwabs = await showPatientAndSwabs(Number(id));
+      const patient = !patientAndSwabs[0]
+        ? await getPatient(id)
+        : patientAndSwabs;
+      if (!patient[0]) return res.status(404).send("Patient not found");
+      let finalResult: Patient = patient.reduce(
+        (
+          acc: Patient,
+          {
+            patient_id,
+            name,
+            fiscal_code,
+            dob,
+            address,
+            email,
+            phone,
+            hasCovid,
+            swab_id,
+            team_id,
+            date,
+            type,
+            done,
+            positive_res,
+          }: any
+        ) => {
+          return {
+            patient_id,
+            name,
+            fiscal_code,
+            dob,
+            address,
+            email,
+            phone,
+            hasCovid,
+            swabs: [
+              { swab_id, team_id, date, type, done, positive_res, patient_id },
+              ...acc.swabs,
+            ],
+          };
+        },
+        { swabs: [] }
+      );
+      res.json(finalResult);
+    } catch (error) {
+      console.log(error);
+      res.status(500).send("Internal server error");
+    }
   }
 );
 
@@ -110,8 +120,13 @@ router.put(
     { params: { id }, body: { email, address, phone, hasCovid } }: Request,
     res: Response
   ) => {
-    const result = await updatePatient(id, email, address, phone, hasCovid);
-    res.json(result);
+    try {
+      const result = await updatePatient(id, email, address, phone, hasCovid);
+      res.json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).send("Internal server error");
+    }
   }
 );
 
@@ -119,8 +134,13 @@ router.delete(
   "/:id",
   idValidation(),
   async ({ params: { id } }: Request, res: Response) => {
-    await deletePatient(id);
-    res.json({ status: "success" });
+    try {
+      await deletePatient(id);
+      res.json({ status: "success" });
+    } catch (error) {
+      console.log(error);
+      res.status(500).send("Internal server error");
+    }
   }
 );
 

@@ -65,13 +65,18 @@ router.get(
   idValidation(),
   handleErrors,
   async ({ params: { id } }: any, res: any) => {
-    const swab = id && (await getSwabById(id));
-    swab[0]
-      ? res.json({
-          ...swab[0],
-          date: moment(swab[0].date).format("YYYY-MM-DD HH:mm"),
-        })
-      : res.status(404).send("Swab not found");
+    try {
+      const swab = id && (await getSwabById(id));
+      swab[0]
+        ? res.json({
+            ...swab[0],
+            date: moment(swab[0].date).format("YYYY-MM-DD HH:mm"),
+          })
+        : res.status(404).send("Swab not found");
+    } catch (error) {
+      console.log(error);
+      res.status(500).send("Internal server error");
+    }
   }
 );
 router.delete(
@@ -79,8 +84,13 @@ router.delete(
   idValidation(),
   handleErrors,
   async ({ params: { id } }: any, res: any) => {
-    await deleteSwab(id);
-    res.json({ message: "Deleted" });
+    try {
+      await deleteSwab(id);
+      res.json({ message: "Deleted" });
+    } catch (error) {
+      console.log(error);
+      res.status(500).send("Internal server error");
+    }
   }
 );
 
@@ -125,16 +135,21 @@ router.put(
     }: any,
     res: any
   ) => {
-    await updateSwab(
-      Number(id),
-      team_id,
-      date,
-      type,
-      patient_id,
-      done,
-      positive_res
-    );
-    res.json({ status: "Swab modified" });
+    try {
+      await updateSwab(
+        Number(id),
+        team_id,
+        date,
+        type,
+        patient_id,
+        done,
+        positive_res
+      );
+      res.json({ status: "Swab modified" });
+    } catch (error) {
+      console.log(error);
+      res.status(500).send("Internal server error");
+    }
   }
 );
 
