@@ -32,13 +32,45 @@ const parseDates = (startDate: any, endDate: any) => {
 const parseSwabByDate = (swabs: Swab[]) => {
   let result: any = {};
   swabs.forEach(
-    ({ swab_id, team_id, date, type, patient_id, done, positive_res }) => {
+    ({
+      swab_id,
+      team_id,
+      date,
+      type,
+      done,
+      positive_res,
+      name,
+      address,
+      phone,
+    }) => {
       result[date.substr(0, 10)] = result[date.substr(0, 10)]
         ? [
             ...result[date.substr(0, 10)],
-            { swab_id, team_id, date, type, patient_id, done, positive_res },
+            {
+              swab_id,
+              team_id,
+              date,
+              type,
+              done,
+              positive_res,
+              name,
+              address,
+              phone,
+            },
           ]
-        : [{ swab_id, team_id, date, type, patient_id, done, positive_res }];
+        : [
+            {
+              swab_id,
+              team_id,
+              date,
+              type,
+              done,
+              positive_res,
+              name,
+              address,
+              phone,
+            },
+          ];
     }
   );
   return result;
