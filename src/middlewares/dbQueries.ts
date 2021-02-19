@@ -7,7 +7,7 @@ export const getAllSwabsByPeriod = async (
   const conn = await db();
   return conn
     .query(
-      `SELECT * FROM swabs INNER JOIN patients ON patients.patient_id=swabs.patient_id WHERE date > DATE '${startDate}' AND date < DATE '${endDate}'`
+      `SELECT * FROM swabs INNER JOIN patients ON patients.patient_id=swabs.patient_id WHERE date > DATE '${startDate}' AND date < DATE '${endDate}' ORDER BY date`
     )
     .catch((err: string | undefined) => {
       console.log(err);

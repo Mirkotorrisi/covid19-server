@@ -13,7 +13,7 @@ export const idValidation = () => {
 
 export const patientValidation = () => {
   return [
-    body("name").isAlpha().withMessage("provide a valid patient name"),
+    body("name").notEmpty().withMessage("provide a valid patient name"),
     body("email").isEmail().withMessage("provide a valid patient email"),
     body("dob")
       .custom((date) => moment(date).isBefore(moment()))
