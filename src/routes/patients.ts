@@ -115,6 +115,7 @@ router.post(
 router.put(
   "/:id",
   idValidation(),
+  patientValidation(),
   handleErrors,
   async (
     { params: { id }, body: { email, address, phone, hasCovid } }: Request,

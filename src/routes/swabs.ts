@@ -42,6 +42,7 @@ const parseSwabByDate = (swabs: Swab[]) => {
       name,
       address,
       phone,
+      patient_id,
     }) => {
       result[date.substr(0, 10)] = result[date.substr(0, 10)]
         ? [
@@ -56,6 +57,7 @@ const parseSwabByDate = (swabs: Swab[]) => {
               name,
               address,
               phone,
+              patient_id,
             },
           ]
         : [
@@ -69,6 +71,7 @@ const parseSwabByDate = (swabs: Swab[]) => {
               name,
               address,
               phone,
+              patient_id,
             },
           ];
     }
@@ -116,6 +119,7 @@ router.delete(
   idValidation(),
   handleErrors,
   async ({ params: { id } }: any, res: any) => {
+    console.log("e siamo quaaa");
     try {
       await deleteSwab(id);
       res.json({ message: "Deleted" });
