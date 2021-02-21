@@ -2,13 +2,17 @@ const request = require("supertest");
 const config = require("config");
 let server;
 const moment = require("moment");
-
+let token;
+let header;
 describe("POST /patients ", () => {
-  beforeEach(() => (server = require("../build/index").default));
+  beforeEach(() => server = require("../build/index").default);
   afterEach(() => {
     server.close();
   });
   it("should post a patient on db if he doesn't exist", async () => {
+    const login = await request(server).post('/users/login').send({username:'uscaGravina', password:'danilo'})
+    token = login.headers['x-auth-token']
+    header = {"Access-Control-Expose-Headers": "x-auth-token",'x-auth-token':token}
     const patient = {
       name: "mirko",
       email: "mirko@torrisi.com",
@@ -19,7 +23,7 @@ describe("POST /patients ", () => {
       hasCovid: false,
     };
 
-    const res = await request(server).post("/patients").send(patient);
+    const res = await request(server).post("/patients").send(patient).set(header);
     expect(res.status).toBe(200);
     expect(res.body.id).toBeGreaterThan(0);
   });
@@ -33,8 +37,8 @@ describe("POST /patients ", () => {
       phone: 3282581363,
       hasCovid: false,
     };
-    await request(server).post("/patients").send(patient);
-    const res = await request(server).post("/patients").send(patient);
+    await request(server).post("/patients").send(patient).set(header);
+    const res = await request(server).post("/patients").send(patient).set(header);
     expect(res.status).toBe(400);
     expect(res.text).toMatch("Patient already registered");
   });
@@ -48,7 +52,7 @@ describe("POST /patients ", () => {
       phone: "no",
       hasCovid: "no",
     };
-    const res = await request(server).post("/patients").send(patient);
+    const res = await request(server).post("/patients").send(patient).set(header);
     expect(res.status).toBe(422);
     expect(res.body).toMatchObject({
       errors: [
@@ -64,25 +68,25 @@ describe("POST /patients ", () => {
   });
 });
 describe("GET /patients", () => {
-  beforeEach(() => (server = require("../build/index").default));
+  beforeEach(() => server = require("../build/index").default);
   afterEach(() => {
     server.close();
   });
   it("should return all patients", async () => {
-    const res = await request(server).get("/patients");
+    const res = await request(server).get("/patients").set(header);
     expect(res.status).toBe(200);
     expect(res.body[0].patient_id).toBeGreaterThan(0);
   });
   it("should return all swabs of a patient plus his data", async () => {
-    const patientID = 1;
-    const res = await request(server).get(`/patients/${patientID}`);
+    const patientID = 191;
+    const res = await request(server).get(`/patients/${patientID}`).set(header);
     expect(res.status).toBe(200);
     expect(res.body.patient_id).toBe(patientID);
     res.body.swabs.forEach((swab) => expect(swab.patient_id).toBe(patientID));
   });
 });
 describe("PUT /patients", () => {
-  beforeEach(() => (server = require("../build/index").default));
+  beforeEach(() => server = require("../build/index").default);
   afterEach(() => {
     server.close();
   });
@@ -93,14 +97,14 @@ describe("PUT /patients", () => {
       phone: "3253261365",
       hasCovid: 1,
     };
-    const patientID = 6;
-    await request(server).put(`/patients/${patientID}`).send(newPatient);
+    const patientID = 191;
+    await request(server).put(`/patients/${patientID}`).send(newPatient).set(header);
     const res = await request(server).get(`/patients/${patientID}`);
     expect(res.body).toMatchObject({ ...newPatient, patient_id: patientID });
   });
 });
 describe("DEL /patients", () => {
-  beforeEach(() => (server = require("../build/index").default));
+  beforeEach(() => server = require("../build/index").default);
   afterEach(() => {
     server.close();
   });
@@ -116,9 +120,9 @@ describe("DEL /patients", () => {
     };
     const {
       body: { id },
-    } = await request(server).post(`/patients/`).send(newPatient);
-    await request(server).delete(`/patients/${id}`);
-    const res = await request(server).get(`/patients/${id}`);
+    } = await request(server).post(`/patients/`).send(newPatient).set(header);
+    await request(server).delete(`/patients/${id}`).set(header);
+    const res = await request(server).get(`/patients/${id}`).set(header);
     expect(res.status).toBe(404);
     expect(res.text).toMatch("Patient not found");
   });

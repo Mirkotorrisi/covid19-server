@@ -5,13 +5,17 @@ const db = async () => {
     timezone: "UTC",
     dateStrings: true,
     connectionLimit: 10,
-    host: "localhost", //"sql11.freemysqlhosting.net",
+    // host: "sql11.freemysqlhosting.net",
+    host: "localhost",
     port: 3306,
-    user: "root", //config.get("db_username"),
-    password: "", //config.get("db_password"),
-    database: "covid19", //config.get("db_username"),
-  });
-
+    // user: config.get("db_username"),
+    user: "root",
+    // password: config.get("db_password"),
+    password: "",
+    // database: config.get("db_username"),
+    database: "covid19",
+  })
+  console.log("db connected")
   return await pool.getConnection();
 };
 
