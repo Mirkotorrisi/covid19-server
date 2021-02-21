@@ -35,10 +35,12 @@ export const patientValidation = () => {
 
 export const newSwabValidation = () => {
   return [
-    body("patient_id").isNumeric().withMessage("provide a valid patient Id"),
+    body("patient_id")
+      .isFloat({ min: 1 })
+      .withMessage("provide a valid patient Id"),
     body("team_id").isNumeric().withMessage("provide a valid team Id"),
     body("date")
-      .custom((value) => moment(value).isValid())
+      .custom((value) => moment(value, "YYYY-MM-DD HH:mm", true).isValid())
       .withMessage("provide a valid date of execution"),
     body("type")
       .custom((value) => ["rap", "mol"].some((i) => i === value))

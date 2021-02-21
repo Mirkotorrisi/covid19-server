@@ -119,7 +119,6 @@ router.delete(
   idValidation(),
   handleErrors,
   async ({ params: { id } }: any, res: any) => {
-    console.log("e siamo quaaa");
     try {
       await deleteSwab(id);
       res.json({ message: "Deleted" });
