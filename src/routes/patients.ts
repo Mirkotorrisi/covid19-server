@@ -24,25 +24,6 @@ router.get("/", async (req: Request, res: Response) => {
 
 router.get("/:id", async ({ params: { id } }: Request, res: Response) => {
   const patient = await showPatientAndSwabs(Number(id));
-  //TODO creare un unico oggetto paziente con dentro l'array di oggetti swabs
-  //   {
-  //     "patient_id": 1,
-  //     "name": "alberto",
-  //     "fiscal_code": "TRRLRT93L13C351X",
-  //     "dob": "2021-07-12T22:00:00.000Z",
-  //     "address": "via cambiata2",
-  //     "email": "alberto@emailcambiata.com",
-  //     "phone": 38013973332,
-  //     "hasCovid": 0,
-
-  //     "swab_id": 1,
-  //     "team_id": 1,
-  //     "date": "2021-02-13T13:00:00.000Z",
-  //     "type": "rap",
-  //     "done": 0,
-  //     "positive_res": 0
-  // },
-
   let finalResult: Patient = patient.reduce(
     (
       acc: Patient,
@@ -81,7 +62,6 @@ router.get("/:id", async ({ params: { id } }: Request, res: Response) => {
     { swabs: [] }
   );
 
-  console.log(finalResult);
   res.json(finalResult);
 });
 
