@@ -1,4 +1,6 @@
 {
   "db_password": "",
-  "db_username": ""
+  "db_username": "",
+  "redis_url": "",
+  "jwtPrivateKey": ""
 }

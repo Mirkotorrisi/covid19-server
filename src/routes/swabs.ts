@@ -1,6 +1,5 @@
 import {
   getAllSwabsByPeriod,
-  getAllSwabsByPatient,
   deleteSwab,
   getSwabById,
   updateSwab,
@@ -9,12 +8,17 @@ import {
 } from "./../middlewares/dbQueries";
 import express from "express";
 import moment from "moment";
-import Patient from "../interfaces";
-//import Swab from '../interfaces/index';
+import {
+  handleErrors,
+  newSwabValidation,
+  idValidation,
+} from "../middlewares/validator";
+import auth from "../middlewares/auth";
+import Swab from "../interfaces";
 
 const router = express.Router();
 const parseDates = (startDate: any, endDate: any) => {
-  const momentFormat = "YYYY-MM-DD HH:MM";
+  const momentFormat = "YYYY-MM-DD";
   return moment(endDate).isAfter(moment(startDate))
     ? {
         startParsed: moment(startDate).format(momentFormat),
@@ -25,105 +29,163 @@ const parseDates = (startDate: any, endDate: any) => {
         endParsed: moment().add(1, "week").format(momentFormat),
       };
 };
-router.get("/", async ({ query: { startDate, endDate } }, res) => {
-  const { startParsed, endParsed } = parseDates(startDate, endDate);
-  const swabs = await getAllSwabsByPeriod(startParsed, endParsed);
-  res.json(swabs);
+const parseSwabByDate = (swabs: Swab[]) => {
+  let result: any = {};
+  swabs.forEach(
+    ({
+      swab_id,
+      team_id,
+      date,
+      type,
+      done,
+      positive_res,
+      name,
+      address,
+      phone,
+      patient_id,
+    }) => {
+      result[date.substr(0, 10)] = result[date.substr(0, 10)]
+        ? [
+            ...result[date.substr(0, 10)],
+            {
+              swab_id,
+              team_id,
+              date,
+              type,
+              done,
+              positive_res,
+              name,
+              address,
+              phone,
+              patient_id,
+            },
+          ]
+        : [
+            {
+              swab_id,
+              team_id,
+              date,
+              type,
+              done,
+              positive_res,
+              name,
+              address,
+              phone,
+              patient_id,
+            },
+          ];
+    }
+  );
+  return result;
+};
+router.use(auth);
+router.get("/", async ({ query: { startDate, endDate, patientId } }, res) => {
+  try {
+    const { startParsed, endParsed } = parseDates(startDate, endDate);
+    const swabs = patientId
+      ? await getSwabForPatient(String(patientId))
+      : await getAllSwabsByPeriod(String(startParsed), String(endParsed));
+    swabs[0]
+      ? res.json(parseSwabByDate(swabs))
+      : res
+          .status(404)
+          .send("No swabs found, try different period or patient id");
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("Internal server error");
+  }
 });
-router.get("/:id", async ({ params: { id } }, res) => {
-  const swab = id ?? (await getSwabById(id));
-  res.json(swab);
-});
-router.delete("/:id", async ({ params: { id } }, res) => {
-  await deleteSwab(id);
-  res.json({ message: "Deleted" });
-});
-
-router.get("/", async ({ query: { patient_id } }, res) => {
-  const swabs = await getSwabForPatient(Number(patient_id));
-  //TODO creare un unico oggetto paziente con dentro l'array di oggetti swabs
-  let finalResult: Patient[] = [];
-  // swabs.forEach(
-  //   ({ ticket_id, bolletta_status, bet_import, max_win }) => {
-  //     finalResult[ticket_id] = {
-  //       ticket_id,
-  //       bolletta_status,
-  //       bet_import,
-  //       max_win,
-  //       ticket: [],
-  //     };
-  //   }
-  // );
-  // ticketsFetched.forEach(
-  //   ({
-  //     ticket_id,
-  //     bet_status,
-  //     team_1,
-  //     team_2,
-  //     result,
-  //     odd,
-  //     commence_time,
-  //   }) => {
-  //     finalResult[ticket_id].ticket.push({
-  //       bet_status,
-  //       team_1,
-  //       team_2,
-  //       result,
-  //       odd,
-  //       commence_time,
-  //     });
-  //   }
-  // );
-  // res.json(finalResult.filter((i) => i !== null));
-  res.json(swabs);
-});
-
-router.post(
-  "/",
-  async (
-    { body: { team_id, date, type, patient_id, done, positive_res } },
-    res
-  ) => {
-    await addSwab(team_id, date, type, patient_id, done, positive_res);
-    res.json({ status: "Added" });
+router.get(
+  "/:id",
+  idValidation(),
+  handleErrors,
+  async ({ params: { id } }: any, res: any) => {
+    try {
+      const swab = id && (await getSwabById(id));
+      swab[0]
+        ? res.json({
+            ...swab[0],
+            date: moment(swab[0].date).format("YYYY-MM-DD HH:mm"),
+          })
+        : res.status(404).send("Swab not found");
+    } catch (error) {
+      console.log(error);
+      res.status(500).send("Internal server error");
+    }
   }
 );
+router.delete(
+  "/:id",
+  idValidation(),
+  handleErrors,
+  async ({ params: { id } }: any, res: any) => {
+    try {
+      await deleteSwab(id);
+      res.json({ message: "Deleted" });
+    } catch (error) {
+      console.log(error);
+      res.status(500).send("Internal server error");
+    }
+  }
+);
+
 router.post(
   "/",
+  newSwabValidation(),
+  handleErrors,
   async (
-    { body: { team_id, date, type, patient_id, done, positive_res } },
-    res
+    { body: { team_id, date, type, patient_id, done, positive_res } }: any,
+    res: any
   ) => {
-    await addSwab(team_id, date, type, patient_id, done, positive_res);
-    res.json({ status: "Added" });
+    try {
+      const { insertId } = await addSwab(
+        team_id,
+        date,
+        type,
+        patient_id,
+        done,
+        positive_res
+      );
+      res.json({ status: "success", id: insertId });
+    } catch ({ message }) {
+      if (message.includes("ER_DUP_ENTRY"))
+        return res
+          .status(400)
+          .send("Swab's patient and execution date already registered");
+      else {
+        return res.status(500).send(message);
+      }
+    }
   }
 );
 
 router.put(
   "/:id",
+  idValidation(),
+  newSwabValidation(),
   async (
     {
       params: { id },
       body: { team_id, date, type, patient_id, done, positive_res },
-    },
-    res
+    }: any,
+    res: any
   ) => {
-    await updateSwab(
-      Number(id),
-      team_id,
-      date,
-      type,
-      patient_id,
-      done,
-      positive_res
-    );
-    res.json({ status: "Swab modified" });
+    try {
+      await updateSwab(
+        Number(id),
+        team_id,
+        date,
+        type,
+        patient_id,
+        done,
+        positive_res
+      );
+      res.json({ status: "Swab modified" });
+    } catch (error) {
+      console.log(error);
+      res.status(500).send("Internal server error");
+    }
   }
 );
-
-router.delete("/:id", async ({ params: { id } }, res) => {
-  await deleteSwab(id);
-  res.json({ status: "success" });
-});
 
 export default router;

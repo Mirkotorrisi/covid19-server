@@ -8,20 +8,27 @@ import {
 } from "./../middlewares/dbQueries";
 import express, { Request, Response, NextFunction } from "express";
 import Patient from "../interfaces";
+import {
+  handleErrors,
+  idValidation,
+  patientValidation,
+} from "../middlewares/validator";
+import auth from "../middlewares/auth";
 
 const router = express.Router();
 
-/*
-router.get("/:id", async ({ params: { id } }:Request, res:Response) => {
-  const patient = await getPatient(Number(id));
-  res.json(patient);
-});
-*/
+router.use(auth);
 router.get("/", async (req: Request, res: Response) => {
-  const patients = await getAllPatients();
-  res.json(patients);
+  try {
+    const patients = await getAllPatients();
+    res.json(patients);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("Internal server error");
+  }
 });
 
+<<<<<<< HEAD
 router.get("/:id", async ({ params: { id } }: Request, res: Response) => {
   const patient = await showPatientAndSwabs(Number(id));
   let finalResult: Patient = patient.reduce(
@@ -64,21 +71,75 @@ router.get("/:id", async ({ params: { id } }: Request, res: Response) => {
 
   res.json(finalResult);
 });
+=======
+router.get(
+  "/:id",
+  idValidation(),
+  async ({ params: { id } }: Request, res: Response) => {
+    try {
+      const patientAndSwabs = await showPatientAndSwabs(Number(id));
+      const patient = !patientAndSwabs[0]
+        ? await getPatient(id)
+        : patientAndSwabs;
+      if (!patient[0]) return res.status(404).send("Patient not found");
+      let finalResult: Patient = patient.reduce(
+        (
+          acc: Patient,
+          {
+            patient_id,
+            name,
+            fiscal_code,
+            dob,
+            address,
+            email,
+            phone,
+            hasCovid,
+            swab_id,
+            team_id,
+            date,
+            type,
+            done,
+            positive_res,
+          }: any
+        ) => {
+          return {
+            patient_id,
+            name,
+            fiscal_code,
+            dob,
+            address,
+            email,
+            phone,
+            hasCovid,
+            swabs: [
+              { swab_id, team_id, date, type, done, positive_res, patient_id },
+              ...acc.swabs,
+            ],
+          };
+        },
+        { swabs: [] }
+      );
+      res.json(finalResult);
+    } catch (error) {
+      console.log(error);
+      res.status(500).send("Internal server error");
+    }
+  }
+);
+>>>>>>> 5f4e9f9654d198e63354775fdce204ff1c2c4aaa
 
 router.post(
   "/",
+  patientValidation(),
+  handleErrors,
   async (
     {
       body: { name, email, dob, fiscal_code, address, phone, hasCovid },
     }: Request,
     res: Response
   ) => {
-    const patients = JSON.parse(JSON.stringify(await getAllPatients()));
-    const checkPatients = patients.some(
-      (p: Patient) => p.fiscal_code === String(fiscal_code)
-    );
-    if (!checkPatients) {
-      await newPatient(
+    try {
+      const { insertId } = await newPatient(
         name,
         email,
         dob,
@@ -87,32 +148,46 @@ router.post(
         phone,
         hasCovid
       );
-      return res.json({ status: "success" });
+      return res.json({ id: insertId });
+    } catch ({ message }) {
+      if (message.includes("ER_DUP_ENTRY"))
+        return res.status(400).send("Patient already registered");
+      else return res.status(500).send(message);
     }
-    return res.json({ message: "Error" });
   }
 );
 
 router.put(
   "/:id",
+  idValidation(),
+  patientValidation(),
+  handleErrors,
   async (
     { params: { id }, body: { email, address, phone, hasCovid } }: Request,
     res: Response
   ) => {
-    const patientToUpdate = await updatePatient(
-      Number(id),
-      email,
-      address,
-      phone,
-      hasCovid
-    );
-    res.json({ status: "success" });
+    try {
+      const result = await updatePatient(id, email, address, phone, hasCovid);
+      res.json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).send("Internal server error");
+    }
   }
 );
 
-router.delete("/:id", async ({ params: { id } }: Request, res: Response) => {
-  const deleteAccount = await deletePatient(Number(id));
-  res.json({ status: "success" });
-});
+router.delete(
+  "/:id",
+  idValidation(),
+  async ({ params: { id } }: Request, res: Response) => {
+    try {
+      await deletePatient(id);
+      res.json({ status: "success" });
+    } catch (error) {
+      console.log(error);
+      res.status(500).send("Internal server error");
+    }
+  }
+);
 
 export default router;

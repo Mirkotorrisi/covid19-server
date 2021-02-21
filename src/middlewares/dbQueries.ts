@@ -7,9 +7,10 @@ export const getAllSwabsByPeriod = async (
   const conn = await db();
   return conn
     .query(
-      `SELECT * FROM swabs WHERE date > DATE '${startDate}' AND date < DATE '${endDate}'`
+      `SELECT * FROM swabs INNER JOIN patients ON patients.patient_id=swabs.patient_id WHERE date > DATE '${startDate}' AND date < DATE '${endDate}' ORDER BY date`
     )
     .catch((err: string | undefined) => {
+      console.log(err);
       throw new Error(err);
     });
 };
@@ -18,6 +19,7 @@ export const getAllSwabsByPatient = async (patient_id: string) => {
   return conn
     .query(`SELECT * FROM swabs WHERE patient_id = ${patient_id}`)
     .catch((err: string | undefined) => {
+      console.log(err);
       throw new Error(err);
     });
 };
@@ -26,20 +28,12 @@ export const getSwabById = async (swab_id: string) => {
   return conn
     .query(`SELECT * FROM swabs WHERE swab_id = ${swab_id}`)
     .catch((err: string | undefined) => {
-      throw new Error(err);
-    });
-};
-export const getSwab = async (id: number) => {
-  const conn = await db();
-  return conn
-    .query(`SELECT * FROM swabs WHERE swab_id = ${id}`)
-    .catch((err: string | undefined) => {
       console.log(err);
       throw new Error(err);
     });
 };
 
-export const getSwabForPatient = async (id: number) => {
+export const getSwabForPatient = async (id: string) => {
   const conn = await db();
   return conn
     .query(`SELECT * FROM swabs WHERE patient_id = ${id}`)
@@ -149,7 +143,7 @@ export const getAllPatients = async () => {
 };
 
 export const updatePatient = async (
-  id: number,
+  id: string,
   email: string,
   address: string,
   phone: number,
@@ -166,10 +160,19 @@ export const updatePatient = async (
     });
 };
 
-export const deletePatient = async (id: number) => {
+export const deletePatient = async (id: string) => {
   const conn = await db();
   return conn
     .query(`DELETE FROM patients WHERE patient_id= ${id} `)
+    .catch((err: string | undefined) => {
+      console.log(err);
+      throw new Error(err);
+    });
+};
+export const getUser = async (username: string) => {
+  const conn = await db();
+  return conn
+    .query(`SELECT password FROM users WHERE username= '${username}'`)
     .catch((err: string | undefined) => {
       console.log(err);
       throw new Error(err);
