@@ -28,50 +28,6 @@ router.get("/", async (req: Request, res: Response) => {
   }
 });
 
-<<<<<<< HEAD
-router.get("/:id", async ({ params: { id } }: Request, res: Response) => {
-  const patient = await showPatientAndSwabs(Number(id));
-  let finalResult: Patient = patient.reduce(
-    (
-      acc: Patient,
-      {
-        patient_id,
-        name,
-        fiscal_code,
-        dob,
-        address,
-        email,
-        phone,
-        hasCovid,
-        swab_id,
-        team_id,
-        date,
-        type,
-        done,
-        positive_res,
-      }: any
-    ) => {
-      return {
-        patient_id,
-        name,
-        fiscal_code,
-        dob,
-        address,
-        email,
-        phone,
-        hasCovid,
-        swabs: [
-          { swab_id, team_id, date, type, done, positive_res, patient_id },
-          ...acc.swabs,
-        ],
-      };
-    },
-    { swabs: [] }
-  );
-
-  res.json(finalResult);
-});
-=======
 router.get(
   "/:id",
   idValidation(),
@@ -102,6 +58,7 @@ router.get(
             positive_res,
           }: any
         ) => {
+          
           return {
             patient_id,
             name,
@@ -126,7 +83,6 @@ router.get(
     }
   }
 );
->>>>>>> 5f4e9f9654d198e63354775fdce204ff1c2c4aaa
 
 router.post(
   "/",
