@@ -9,7 +9,6 @@ export default (req: Request, res: Response, next: NextFunction) => {
 
   try {
     const username = String(jwt.verify(token, config.get("jwtPrivateKey")));
-
     client.get(username, (err, result) => {
       if (err) return res.status(500).send("Internal server error, sorry.");
       if (result && token === result) {

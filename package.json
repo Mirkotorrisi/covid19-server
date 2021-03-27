@@ -5,8 +5,15 @@
   "main": "index.js",
   "scripts": {
     "test": "npm run build && jest --watchAll",
-    "start": "npm run build && node build/index.js",
+    "start": "node build/index.js",
+    "postinstall": "tsc",
+    "watch-node": "nodemon build/index.js",
+    "watch-ts": "tsc -w",
+    "deploy": "git add . && git commit -m Heroku && git push heroku master",
     "build": "tsc"
+  },
+  "engines": {
+    "node": "12.13.0"
   },
   "repository": {
     "type": "git",
