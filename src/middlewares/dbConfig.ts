@@ -6,16 +6,16 @@ const db = async () => {
     dateStrings: true,
     connectionLimit: 10,
     // host: "sql11.freemysqlhosting.net",
-    host: "localhost",
+    host: "freedb.tech",
+    // host: "localhost",
     port: 3306,
-    // user: config.get("db_username"),
-    user: "root",
-    // password: config.get("db_password"),
-    password: "",
+    user: config.get("db_username"),
+    // user: "root",
+    password: config.get("db_password"),
+    // password: "",
     // database: config.get("db_username"),
-    database: "covid19",
-  })
-  console.log("db connected")
+    database: "freedbtech_covidatabase",
+  });
   return await pool.getConnection();
 };
 
