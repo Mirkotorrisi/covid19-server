@@ -32,6 +32,18 @@ export const patientValidation = () => {
       .withMessage("provide a valid covid19 posivity check (true, false)"),
   ];
 };
+export const patientUpdateValidation = () => {
+  return [
+    body("email").isEmail().withMessage("provide a valid patient email"),
+    body("address").notEmpty().withMessage("provide a valid address"),
+    body("phone")
+      .matches("(3[1-6][0-9])(\\d{7})$")
+      .withMessage("provide a valid phone number"),
+    body("hasCovid")
+      .isBoolean()
+      .withMessage("provide a valid covid19 posivity check (true, false)"),
+  ];
+};
 
 export const newSwabValidation = () => {
   return [
