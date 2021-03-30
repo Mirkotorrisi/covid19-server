@@ -12,6 +12,7 @@ import {
   handleErrors,
   idValidation,
   patientValidation,
+  patientUpdateValidation,
 } from "../middlewares/validator";
 import auth from "../middlewares/auth";
 
@@ -58,7 +59,6 @@ router.get(
             positive_res,
           }: any
         ) => {
-          
           return {
             patient_id,
             name,
@@ -116,7 +116,7 @@ router.post(
 router.put(
   "/:id",
   idValidation(),
-  patientValidation(),
+  patientUpdateValidation(),
   handleErrors,
   async (
     { params: { id }, body: { email, address, phone, hasCovid } }: Request,
